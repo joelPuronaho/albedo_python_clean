@@ -10,11 +10,11 @@ RESULTS:
 - output/ folder contains results in excel format
 - Terminal output:
 
-GAMS version results (Jussi):
+**GAMS version results (Jussi):**
+
 Number of Iterations....: 49
 
                                    (scaled)                 (unscaled)
-                            2.5472504543004861e+03
 Objective...............:   2.5472577568742145e+03   -2.5472577568742145e+03
 Dual infeasibility......:   7.6508041541305831e-08    7.6508041541305831e-08
 Constraint violation....:   4.0970007830765097e-09    8.1940015661530183e-08
@@ -36,7 +36,7 @@ EXIT: Optimal Solution Found.
 
 
 
-Python version (Joel):
+**Python version (Joel):**
 Number of Iterations....: 368
 
                                    (scaled)                 (unscaled)
