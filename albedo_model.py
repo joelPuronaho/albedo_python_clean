@@ -843,10 +843,10 @@ print(f"\nTotal number of variables: {total_variables}")
 # ****************************************
 
 #Parameter
-keypars = {}          # "parameters put into excel"
-scalarresults = {}    # "scalar results"
-ma = {}            # mean age of forests
-TCS = {}           # total carbon stock (biomass & soils & products);
+keypars = {}            # "parameters put into excel"
+scalarresults = {}      # "scalar results"
+ma = {}                 # mean age of forests
+TCS = {}                # total carbon stock (biomass & soils & products);
 
 #ma(t)    = timestep*sum(a, x.l(t,a)*(ord(a)))/(0.000000001+sum(a, x.l(t,a)))-timestep/2;
 for t in model.t:
@@ -994,12 +994,17 @@ x_z_theta_df = pd.DataFrame(x_z_theta_data)
 keypars_df = pd.DataFrame([keypars])
 
 from openpyxl import * 
-with pd.ExcelWriter('output/new_mod_albedo_model_scalarresults.xlsx', engine='openpyxl') as writer:
-    # Write keypars_df, scalarresults_df and results_df to xlsx
-    keypars_df.to_excel(writer, sheet_name='Results', index=False, startrow=0)
-    scalarresults_df.to_excel(writer, sheet_name='Results', index=False, startrow=4)
-    results_df.to_excel(writer, sheet_name='Results', index=False, startrow=8)  # Adjust row as needed
+#with pd.ExcelWriter('output/albedo_model_results.xlsx', engine='openpyxl') as writer:
+#    # Write keypars_df, scalarresults_df and results_df to xlsx
+#    keypars_df.to_excel(writer, sheet_name='Results', index=False, startrow=0)
+#    scalarresults_df.to_excel(writer, sheet_name='Results', index=False, startrow=4)
+#    results_df.to_excel(writer, sheet_name='Results', index=False, startrow=8)
 
-scalarresults_df = pd.DataFrame([scalarresults])
-scalarresults_df.to_excel('output/new_mod_albedo_model_scalarresults.xlsx', sheet_name='ScalarResults', index=False)
+with pd.ExcelWriter('output/albedo_model_results.xlsx', engine='openpyxl') as writer:
+    # Write keypars_df and scalarresults_df to the same sheet
+    keypars_df.to_excel(writer, sheet_name='Keypars & Scalarresults', index=False, startrow=0)
+    scalarresults_df.to_excel(writer, sheet_name='Keypars & Scalarresults', index=False, startrow=len(keypars_df) + 4)
+
+    # Write results_df to a separate sheet
+    results_df.to_excel(writer, sheet_name='Results', index=False, startrow=0)
 #endregion
