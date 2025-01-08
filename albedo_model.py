@@ -60,9 +60,7 @@ dfInit1 = pd.read_excel("input_data/DataDF_H.xls")
 pcInit1 = pd.read_excel("input_data/DataPC_H.xls")
 scfInit1 = pd.read_excel("input_data/DataSCF_H.xls")
 
-#dfInit = dfInit1.values.flatten().tolist()         # Virhe
 dfInit = dfInit1.values.flatten().tolist()[:101]
-#pcInit = pcInit1.values.flatten().tolist()         # Virhe
 pcInit = pcInit1.values.flatten().tolist()[:101]
 scfInit = scfInit1.values.flatten().tolist()
 #endregion
@@ -556,8 +554,6 @@ def xfirst_constraint(model, t):
             return model.x[t + 1, 1] == sum(model.z[t, a] for a in model.a) + model.y[t - 1] - model.y[t]
         elif t == 0:
             return model.x[t + 1, 1] == sum(model.z[t, a] for a in model.a) + model.yinit - model.y[t]
-        #else:                               # virhe
-        #    return model.x[t + 1, 1] == 0   # virhe
     return Constraint.Skip
 model.xfirst = Constraint(model.t, rule=xfirst_constraint)
 
@@ -616,8 +612,6 @@ def utimber_constraint(model, t):
         return model.ux[t] == model.tcalibp * model.tcalibq / (1 - model.telast) * ((model.hx[t] / model.tcalibq )**(1 - model.telast) - 1)
     if model.telast == 1:
         return model.ux[t] == model.tcalibp * model.tcalibq * log(model.hx[t] / model.tcalibq)
-    #else:                           # virhe
-    #    return model.ux[t] == 0     # virhe
     return Constraint.Skip
 model.utimber = Constraint(model.t, rule=utimber_constraint)
 
@@ -628,8 +622,6 @@ def ufood_constraint(model, t):
         return model.uy[t] == model.fcalibp * model.fcalibq / (1 - model.felast) * ((model.hy[t] / model.fcalibq)**(1 - model.felast) - 1)
     if model.felast == 1:
         return model.uy[t] == model.fcalibp * model.fcalibq * log(model.hy[t] / model.fcalibq)
-    #else:                           # virhe
-    #    return model.uy[t] == 0     # virhe
     return Constraint.Skip
 model.ufood = Constraint(model.t, rule=ufood_constraint)
 
@@ -641,8 +633,6 @@ def cost_constraint(model, t):
         return model.c[t] == sum_condition + model.creg * (sum(model.z[t,a] for a in model.a) + model.y[t - 1]  - model.y[t])
     elif t == 0:
         return model.c[t] == sum_condition + model.creg * (sum(model.z[t,a] for a in model.a) + model.yinit  - model.y[t])
-    #else:                           # virhe
-    #    return model.c[t] == 0      # virhe
     else:
         return Constraint.Skip
 model.cost = Constraint(model.t, rule=cost_constraint)
