@@ -127,7 +127,7 @@ else:
     vbeta        = 15.44    # "shape parameter -- region specific"
     tqT0         = 16.78    # timber quality: age of first timber -- region specific
     tqTscale     = 33.5     # "timber quality: development scale -- region specific"
-    calibRotation = 50      # Calibration rotation in years -- region specific" **Aapo** Whats the point of this in comparison to MSY rotation? Is it just that in Jyväskylä, they tend to cut trees at 50 years?
+    calibRotation = 50      # Calibration rotation in years -- region specific"
 #endregion
 
 #region     *Set parameters for biomass decay*
@@ -135,7 +135,7 @@ import math as math
 
 vgamma = (vbeta - 1) / math.log(vbeta)
 valfa = 1 / ((1 - (1 / vbeta))**vgamma)
-v = {index: vb * vc * valfa * ((1 - vbeta**(timestep * (-index) / vc)))**vgamma for index in a} # **Aapo** Jotain teoriaa tähän
+v = {index: vb * vc * valfa * ((1 - vbeta**(timestep * (-index) / vc)))**vgamma for index in a}
 vmax = vb * vc * valfa * ((1 - vbeta**(timestep * (-len(a) / vc))))**vgamma
 
 #Parameters
@@ -239,20 +239,20 @@ w = {i: MWopenshrub + albstren * (MWmature - MWopenshrub)*(Alb[i] - Albzero) / (
 yinit = yinitShare * totalArea
 xinit = (1 - yinitShare) * totalArea / (calibRotation / timestep)
 
-# "Total volume of timber at calibrated rotation age" **Aapo**
+# "Total volume of timber at calibrated rotation age"
 calibTimberVol = vb * vc * valfa * (1 - vbeta**(-calibRotation / vc))**vgamma
 
 # Calculate timberquality per age-class
 timberquality = {i: ( 1 - math.exp( -(i * timestep - tqT0 )/tqTscale ) ) if i > tqT0 / timestep else 0 for i in a}
-# **Aapo** Why is this a "sum()" - it just takes the 10th indice anyway?
+
 # "Sum of timber quality at calibRotation / timestep"
 tcalibtimberquality = sum(timberquality[i] for i in a if i == calibRotation / timestep)
 # Total timber output at calibrated rotation
 tcalibq  = xinit * calibTimberVol * tcalibtimberquality
 
-# Agricultural yield at start **Aapo** 
+# Agricultural yield at start
 fcalibq  = agyield * yinit
-# **Aapo** Miksi (fcalibp - cht) food price miinus cost harvest *timber*?
+
 cf = (fcalibp-cht) * agyield - (1 - (1 + calibInterest)**(-timestep)) * ( (tcalibp * tcalibtimberquality - chf) * calibTimberVol * (1 + calibInterest)**(-calibRotation) - creg)/(1 - (1 + calibInterest)**(-calibRotation))
 
 # Calculate Initial product carbon stock for vintage k
