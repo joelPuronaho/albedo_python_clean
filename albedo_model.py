@@ -494,7 +494,7 @@ for t in model.t:
 #endregion
 
 #region     *Set model parameters*
-# Model parameters. Calculated in the first part of the script - added aa pyomo parameters for good practise
+# Model parameters. Calculated in the first part of the script - added as pyomo parameters for good practise
 model.timestep = Param(initialize=timestep)
 model.deltaS = Param(model.j, initialize=deltaS)
 model.deltaP = Param(model.k, initialize=deltaP)
