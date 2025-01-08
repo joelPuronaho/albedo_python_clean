@@ -494,7 +494,7 @@ for t in model.t:
 #endregion
 
 #region     *Set model parameters*
-# Model parameters. Calculated in the first part of the script - added as pyomo parameters for good practise
+# Model parameters. Calculated in the first part of the script - added as pyomo parameters for good practice
 model.timestep = Param(initialize=timestep)
 model.deltaS = Param(model.j, initialize=deltaS)
 model.deltaP = Param(model.k, initialize=deltaP)
@@ -548,7 +548,6 @@ model.agyield = Param(initialize=agyield)
 
 # Constraint for x in first age class a == 1 
 def xfirst_constraint(model, t):
-    # constraint count: 100
     if t < max(model.t):
         if t > 0:
             return model.x[t + 1, 1] == sum(model.z[t, a] for a in model.a) + model.y[t - 1] - model.y[t]
@@ -559,7 +558,6 @@ model.xfirst = Constraint(model.t, rule=xfirst_constraint)
 
 # Constraint for x in "next" age classes a == 1 - 29 / 59
 def xnext_constraint(model, t, a):
-    # constraint count: 2800
     if a < max(model.a) - 1 and t < max(model.t):
         return model.x[t + 1, a + 1] == model.x[t, a] - model.z[t, a]
     return Constraint.Skip
@@ -567,7 +565,6 @@ model.xnext = Constraint(model.t, model.a, rule=xnext_constraint)
 
 # Constraint for x in the last age classe a == 30 / 60
 def xlast_constraint(model, t, a):
-    # constraint count: 100
     if a == max(model.a) - 1 and t < max(model.t):
         return model.x[t + 1, a + 1] == model.x[t, a] - model.z[t, a] + model.x[t, a + 1] - model.z[t, a + 1]
     return Constraint.Skip
@@ -575,17 +572,14 @@ model.xlast = Constraint(model.t, model.a, rule=xlast_constraint)
 
 # Constraint for harvest - harvest area cannot exceed forest area
 def zcons_constraint(model, t, a):
-    # constraint count: 3030
-    # Using this sets "inequality constraints with only **upper** bounds: 3030" <- Constraint **same** as in GAMS version, but ipopt output **different**
+    # inequality constraints with only upper bounds:     3030 
     #return model.x[t, a] >= model.z[t, a]
-
-    # Using this sets "inequality constraints with only **lower** bounds: 3030" <- Constraint **different** to GAMS version, but ipopt output the **same**
-    return model.x[t, a] - model.z[t, a] >= 0          # Tämä oikein t. ChatGPT
+    # inequality constraints with only lower bounds:     3030
+    return model.x[t, a] - model.z[t, a] >= 0          # Jussi, matemaattisesti molemmat lienee sama asia, mutta ipopt antaa eri palautetta. ChatGPT:n mukaan tätä riviä tulisi käyttää, mutten ole pystynyt vahvistamaan
 model.zcons = Constraint(model.t, model.a, rule=zcons_constraint)
 
 # Constraint for land - agricultural area and forest area cannot exceed the total area
 def landcons2_constraint(model, t):
-    # constraint count: 100
     if t > 0:
         return model.totalArea == model.y[t - 1] + sum(model.x[t, a] for a in model.a)
     return Constraint.Skip
@@ -595,19 +589,16 @@ model.landcons2 = Constraint(model.t, rule=landcons2_constraint)
 #region     *harvx, harvy, utimber, ufood, cost, tprice, fprice*
 # Constraint for timber harvest - Equals to harvested area *times* volume per age class *times* timberquality
 def harvx_constraint(model, t):
-    # constraint count: 101
     return model.hx[t] == sum(model.z[t, a] * model.v[a] * model.timberquality[a] for a in model.a)
 model.harvx = Constraint(model.t, rule=harvx_constraint)
 
 # Constraint for agricultural yield - agricultural area *times* agyield (parameter set for yield per ha.)
 def harvy_constraint(model, t):
-    # constraint count: 101
     return model.hy[t] == model.agyield * model.y[t]
 model.harvy = Constraint(model.t, rule=harvy_constraint)
 
 # Constraint for timber utility ** Add more info **
 def utimber_constraint(model, t):
-    # constraint count: 101
     if model.telast != 1:
         return model.ux[t] == model.tcalibp * model.tcalibq / (1 - model.telast) * ((model.hx[t] / model.tcalibq )**(1 - model.telast) - 1)
     if model.telast == 1:
@@ -617,7 +608,6 @@ model.utimber = Constraint(model.t, rule=utimber_constraint)
 
 # Constraint for food utility ** Add more info **
 def ufood_constraint(model, t):
-    # constraint count: 101
     if model.felast != 1:
         return model.uy[t] == model.fcalibp * model.fcalibq / (1 - model.felast) * ((model.hy[t] / model.fcalibq)**(1 - model.felast) - 1)
     if model.felast == 1:
@@ -627,7 +617,6 @@ model.ufood = Constraint(model.t, rule=ufood_constraint)
 
 # Constraint for overall costs - ** Add more info **
 def cost_constraint(model, t):
-    # constraint count: 101
     sum_condition = model.cht * sum(model.z[t, a] * model.v[a] for a in model.a) + model.chf * model.hy[t] + model.cf * model.y[t]
     if t > 0:
         return model.c[t] == sum_condition + model.creg * (sum(model.z[t,a] for a in model.a) + model.y[t - 1]  - model.y[t])
@@ -639,13 +628,11 @@ model.cost = Constraint(model.t, rule=cost_constraint)
 
 # Constraint for timber price - ** Add more info **
 def tprice_constraint(model, t):
-    # constraint count: 101
     return model.pt[t] == model.tcalibp * ((model.hx[t] / model.tcalibq)**(-model.telast))
 model.tprice = Constraint(model.t, rule=tprice_constraint)
 
 # Constraint for food price - ** Add more info **
 def fprice_constraint(model, t):
-    # constraint count: 101
     return model.pf[t] == model.fcalibp * ((model.hy[t] / model.fcalibq)**(-model.felast))
 model.fprice = Constraint(model.t, rule=fprice_constraint)
 #endregion
@@ -653,7 +640,6 @@ model.fprice = Constraint(model.t, rule=fprice_constraint)
 #region     *welfare*
 # Constraint for total welfare - ** Add more info **
 def welfare_constraint(model):
-    # constraint count: 1 
     return model.wf == sum((model.ux[t] + model.uy[t] - model.c[t] + model.pc[t] * (11/3) * model.cTCS[t] - model.timestep * model.scf[t] * model.wp[t]) * model.df[t] for t in model.t)
 model.welfare = Constraint(rule=welfare_constraint)
 #endregion
@@ -661,7 +647,6 @@ model.welfare = Constraint(rule=welfare_constraint)
 #region     *Carbon stock changes*
 # Constraint for youngest vintage of product carbon stock - ** Add more info **
 def ProductCSzero_constraint(model, t, k):
-    # constraint count: 101
     if k == 0:
         return model.PCS[t, 0] == (1 - model.imCrel) * model.gammav * sum(model.z[t, a] * model.v[a] for a in model.a)
     else:
@@ -670,7 +655,6 @@ model.ProductCSzero = Constraint(model.t, model.k, rule=ProductCSzero_constraint
 
 # Constraint for product carbon stock - ** Add more info **
 def ProductCS_constraint(model, t, k):
-    # constraint count: 4000
     if k < max(model.k) and t < max(model.t):
         return model.PCS[t + 1, k + 1] == model.PCS[t, k] * (1 - model.deltaP[k])
     else:
@@ -679,7 +663,6 @@ model.ProductCS = Constraint(model.t, model.k, rule=ProductCS_constraint)
 
 # Constraint for youngest vintage of soil carbon stock - ** Add more info **
 def SoilCSzero_constraint(model, t, j):
-    # constraint count: 101
     if j == 0:
         return model.SCS[t, 0] == model.gammab * sum(model.z[t, a] * v[a] for a in model.a)
     else:
@@ -688,7 +671,6 @@ model.SoilCSzero = Constraint(model.t, model.j, rule=SoilCSzero_constraint)
 
 # Constraint for soil carbon stock - ** Add more info **
 def SoilCS_constraint(model, t, j):
-    # constraint count: 4000
     if j < max(model.j) and t < max(model.t):
         return model.SCS[t + 1, j + 1] == model.SCS[t, j] * (1 - model.deltaS[j])
     else:
@@ -697,7 +679,6 @@ model.SoilCS = Constraint(model.t, model.j, rule=SoilCS_constraint)
 
 # Constraint for change in biomass carbon stock - ** Add more info **
 def ChangeBCS_constraint(model, t):
-    # constraint count: 100
     if t < max(model.t):
         return model.cBCS[t] == (model.gammav + model.gammab) * (sum(model.v[a] * (model.x[t + 1, a] - model.x[t, a]) for a in model.a))
     else:
@@ -706,7 +687,6 @@ model.ChangeBCS = Constraint(model.t, rule=ChangeBCS_constraint)
 
 # Constraint for change in product carbon stock - ** Add more info **
 def ChangePCS_constraint(model, t):
-    # constraint count: 100
     if t < max(model.t):
         return model.cPCS[t] == sum(model.PCS[t + 1, k] for k in model.k) - sum(model.PCS[t, k] for k in model.k)
     else:
@@ -715,7 +695,6 @@ model.ChangePCS = Constraint(model.t, rule=ChangePCS_constraint)
 
 # Constraint for change in soil carbon stock - ** Add more info **
 def ChangeSCS_constraint(model, t):
-    # constraint count: 100
     if t < max(model.t):
         return model.cSCS[t] == sum(model.SCS[t + 1, j] for j in model.j) - sum(model.SCS[t, j] for j in model.j)
     else:
@@ -724,7 +703,6 @@ model.ChangeSCS = Constraint(model.t, rule=ChangeSCS_constraint)
 
 # Constraint for change in total carbon stock - ** Add more info **
 def ChangeTCS_constraint(model, t):
-    # constraint count: 101
     return model.cTCS[t] == model.cBCS[t] + model.cPCS[t] + model.cSCS[t]
 model.ChangeTCS = Constraint(model.t, rule=ChangeTCS_constraint)
 #endregion
@@ -733,7 +711,6 @@ model.ChangeTCS = Constraint(model.t, rule=ChangeTCS_constraint)
 # Constraint for warming power of landscape albedo - ** Add more info **
 # **GAMS-versiossa "totalarea" eikä "totalArea"**
 def Warm_constraint(model, t):
-    # constraint count: 101
     return model.wp[t] == (100 / 51) * (sum(model.w[a] * (model.x[t, a] - model.z[t, a]) for a in model.a) + model.MWopenshrub * (model.totalArea - sum(model.x[t, a] - model.z[t, a] for a in model.a)))
 model.Warm = Constraint(model.t, rule=Warm_constraint)
 #endregion
